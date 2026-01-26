@@ -1,5 +1,5 @@
 {
-  "name": "vintasend-ts-sendgrid",
+  "name": "vintasend-sendgrid",
   "version": "0.4.3",
   "description": "",
   "main": "dist/index.js",
