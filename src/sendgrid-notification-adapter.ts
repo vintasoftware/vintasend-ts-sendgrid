@@ -61,8 +61,11 @@ export class SendgridNotificationAdapter<
 
     // Add attachments if present
     if (notification.attachments && notification.attachments.length > 0) {
+      this.logger?.info(`Preparing ${notification.attachments.length} attachment(s) for notification ID ${notification.id}`);
       mailData.attachments = await this.prepareAttachments(notification.attachments);
-      this.logger?.info(`Added ${notification.attachments.length} attachments to email for notification ID ${notification.id}`);
+      this.logger?.info(`Added ${notification.attachments.length} attachment(s) to email for notification ID ${notification.id}`);
+    } else {
+      this.logger?.info(`No attachments found for notification ID ${notification.id}`);
     }
 
     await sgMail.send(mailData);
