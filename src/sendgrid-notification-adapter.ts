@@ -62,9 +62,11 @@ export class SendgridNotificationAdapter<
     // Add attachments if present
     if (notification.attachments && notification.attachments.length > 0) {
       mailData.attachments = await this.prepareAttachments(notification.attachments);
+      this.logger?.info(`Added ${notification.attachments.length} attachments to email for notification ID ${notification.id}`);
     }
 
     await sgMail.send(mailData);
+    this.logger?.info(`Email sent for notification ID ${notification.id}`);
   }
 
   protected async prepareAttachments(
@@ -72,7 +74,9 @@ export class SendgridNotificationAdapter<
   ): Promise<AttachmentData[]> {
     return Promise.all(
       attachments.map(async (att) => {
+        this.logger?.info(`Preparing attachment ${att.filename} for email`);
         const content = await att.file.read();
+        this.logger?.info(`Attachment ${att.filename} read successfully, size: ${content.length} bytes`);
         return {
           filename: att.filename,
           content: content.toString('base64'),
