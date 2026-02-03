@@ -76,16 +76,23 @@ export class SendgridNotificationAdapter<
     attachments: StoredAttachment[],
   ): Promise<AttachmentData[]> {
     return Promise.all(
-      attachments.map(async (att) => {
-        this.logger?.info(`Preparing attachment ${att.filename} for email`);
-        const content = await att.file.read();
-        this.logger?.info(`Attachment ${att.filename} read successfully, size: ${content.length} bytes`);
-        return {
-          filename: att.filename,
-          content: content.toString('base64'),
-          type: att.contentType,
-          disposition: 'attachment',
-        };
+      attachments.map(async (att, index) => {
+        try {
+          this.logger?.info(`Preparing attachment ${index + 1}/${attachments.length}: ${att.filename}`);
+          this.logger?.info(`Attachment storage metadata: ${JSON.stringify(att.storageMetadata)}`);
+          const content = await att.file.read();
+          this.logger?.info(`Attachment ${att.filename} read successfully, size: ${content.length} bytes`);
+          return {
+            filename: att.filename,
+            content: content.toString('base64'),
+            type: att.contentType,
+            disposition: 'attachment',
+          };
+        } catch (error) {
+          this.logger?.error(`Failed to prepare attachment ${att.filename}`);
+          this.logger?.error(`Error details: ${JSON.stringify(error, null, 2)}`);
+          throw error;
+        }
       }),
     );
   }
