@@ -14,6 +14,7 @@ describe('SendgridNotificationAdapter - Attachments', () => {
 
   const mockTemplateRenderer = {
     render: jest.fn(),
+    renderFromTemplateContent: jest.fn(),
     // biome-ignore lint/suspicious/noExplicitAny: any just for testing
   } as jest.Mocked<BaseEmailTemplateRenderer<any>>;
 
@@ -83,6 +84,7 @@ describe('SendgridNotificationAdapter - Attachments', () => {
       status: 'PENDING_SEND' as const,
       sentAt: null,
       readAt: null,
+      gitCommitSha: null,
       sendAfter: new Date(),
     };
   });

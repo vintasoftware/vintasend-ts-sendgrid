@@ -17,6 +17,7 @@ describe('SendgridNotificationAdapter - One-Off Notifications', () => {
 
   const mockTemplateRenderer = {
     render: jest.fn(),
+    renderFromTemplateContent: jest.fn(),
     // biome-ignore lint/suspicious/noExplicitAny: any just for testing
   } as jest.Mocked<BaseEmailTemplateRenderer<any>>;
 
@@ -102,6 +103,7 @@ describe('SendgridNotificationAdapter - One-Off Notifications', () => {
       status: 'PENDING_SEND' as const,
       sentAt: null,
       readAt: null,
+      gitCommitSha: null,
       sendAfter: null,
     };
 
@@ -120,6 +122,7 @@ describe('SendgridNotificationAdapter - One-Off Notifications', () => {
       status: 'PENDING_SEND' as const,
       sentAt: null,
       readAt: null,
+      gitCommitSha: null,
       sendAfter: new Date(),
     };
 
