@@ -1,11 +1,14 @@
 import sgMail from '@sendgrid/mail';
-import type { BaseNotificationBackend } from 'vintasend/dist/services/notification-backends/base-notification-backend';
-import type { BaseEmailTemplateRenderer } from 'vintasend/dist/services/notification-template-renderers/base-email-template-renderer';
-import type { DatabaseNotification } from 'vintasend/dist/types/notification';
-import type { StoredAttachment, AttachmentFile } from 'vintasend/dist/types/attachment';
+import type {
+  AttachmentFile,
+  BaseEmailTemplateRenderer,
+  BaseNotificationBackend,
+  DatabaseNotification,
+  StoredAttachment,
+} from 'vintasend';
+import { type Mock, type Mocked, vi } from 'vitest';
 import { SendgridNotificationAdapterFactory } from '../index';
 import type { SendgridConfig } from '../sendgrid-notification-adapter';
-import { vi, type Mock, type Mocked } from 'vitest';
 
 vi.mock('@sendgrid/mail');
 
@@ -16,10 +19,8 @@ describe('SendgridNotificationAdapter - Attachments', () => {
   const mockTemplateRenderer = {
     render: vi.fn(),
     renderFromTemplateContent: vi.fn(),
-    // biome-ignore lint/suspicious/noExplicitAny: any just for testing
   } as Mocked<BaseEmailTemplateRenderer<any>>;
 
-  // biome-ignore lint/suspicious/noExplicitAny: any just for testing
   const mockBackend: Mocked<BaseNotificationBackend<any>> = {
     persistNotification: vi.fn(),
     persistNotificationUpdate: vi.fn(),
@@ -55,7 +56,6 @@ describe('SendgridNotificationAdapter - Attachments', () => {
     filterNotifications: vi.fn(),
   };
 
-  // biome-ignore lint/suspicious/noExplicitAny: any just for testing
   let mockNotification: DatabaseNotification<any>;
   let config: SendgridConfig;
 

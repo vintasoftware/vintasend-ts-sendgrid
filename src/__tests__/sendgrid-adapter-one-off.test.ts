@@ -1,14 +1,14 @@
 import sgMail from '@sendgrid/mail';
-import type { BaseNotificationBackend } from 'vintasend/dist/services/notification-backends/base-notification-backend';
-import type { BaseEmailTemplateRenderer } from 'vintasend/dist/services/notification-template-renderers/base-email-template-renderer';
 import type {
+  BaseEmailTemplateRenderer,
+  BaseNotificationBackend,
   DatabaseNotification,
   DatabaseOneOffNotification,
-} from 'vintasend/dist/types/notification';
+} from 'vintasend';
+import { type Mock, type Mocked, vi } from 'vitest';
 import type { SendgridNotificationAdapter } from '../index';
 import { SendgridNotificationAdapterFactory } from '../index';
 import type { SendgridConfig } from '../sendgrid-notification-adapter';
-import { vi, type Mock, type Mocked } from 'vitest';
 
 vi.mock('@sendgrid/mail');
 
@@ -19,10 +19,8 @@ describe('SendgridNotificationAdapter - One-Off Notifications', () => {
   const mockTemplateRenderer = {
     render: vi.fn(),
     renderFromTemplateContent: vi.fn(),
-    // biome-ignore lint/suspicious/noExplicitAny: any just for testing
   } as Mocked<BaseEmailTemplateRenderer<any>>;
 
-  // biome-ignore lint/suspicious/noExplicitAny: any just for testing
   const mockBackend: Mocked<BaseNotificationBackend<any>> = {
     persistNotification: vi.fn(),
     persistNotificationUpdate: vi.fn(),
@@ -58,11 +56,8 @@ describe('SendgridNotificationAdapter - One-Off Notifications', () => {
     filterNotifications: vi.fn(),
   };
 
-  // biome-ignore lint/suspicious/noExplicitAny: any just for testing
   let mockOneOffNotification: DatabaseOneOffNotification<any>;
-  // biome-ignore lint/suspicious/noExplicitAny: any just for testing
   let mockRegularNotification: DatabaseNotification<any>;
-  // biome-ignore lint/suspicious/noExplicitAny: any just for testing
   let adapter: SendgridNotificationAdapter<typeof mockTemplateRenderer, any>;
   let config: SendgridConfig;
 
@@ -183,16 +178,13 @@ describe('SendgridNotificationAdapter - One-Off Notifications', () => {
       const error = new Error('SendGrid API error');
       mockSend.mockRejectedValue(error);
 
-      await expect(adapter.send(mockOneOffNotification, {})).rejects.toThrow(
-        'SendGrid API error',
-      );
+      await expect(adapter.send(mockOneOffNotification, {})).rejects.toThrow('SendGrid API error');
     });
 
     it('should throw error if notification ID is missing for one-off notification', async () => {
       const notificationWithoutId = {
         ...mockOneOffNotification,
         id: null,
-        // biome-ignore lint/suspicious/noExplicitAny: any just for testing
       } as any;
 
       await expect(adapter.send(notificationWithoutId, {})).rejects.toThrow(

@@ -1,13 +1,14 @@
-import sgMail from '@sendgrid/mail';
-import type { MailDataRequired } from '@sendgrid/mail';
 import type { AttachmentData } from '@sendgrid/helpers/classes/attachment';
-
-import { BaseNotificationAdapter } from 'vintasend/dist/services/notification-adapters/base-notification-adapter';
-import type { BaseEmailTemplateRenderer } from 'vintasend/dist/services/notification-template-renderers/base-email-template-renderer';
-import type { JsonObject } from 'vintasend/dist/types/json-values';
-import type { AnyDatabaseNotification } from 'vintasend/dist/types/notification';
-import type { BaseNotificationTypeConfig } from 'vintasend/dist/types/notification-type-config';
-import type { StoredAttachment } from 'vintasend/dist/types/attachment';
+import type { MailDataRequired } from '@sendgrid/mail';
+import sgMail from '@sendgrid/mail';
+import type {
+  AnyDatabaseNotification,
+  BaseEmailTemplateRenderer,
+  BaseNotificationTypeConfig,
+  JsonObject,
+  StoredAttachment,
+} from 'vintasend';
+import { BaseNotificationAdapter } from 'vintasend';
 
 export interface SendgridConfig {
   apiKey: string;
@@ -61,9 +62,13 @@ export class SendgridNotificationAdapter<
 
     // Add attachments if present
     if (notification.attachments && notification.attachments.length > 0) {
-      this.logger?.info(`Preparing ${notification.attachments.length} attachment(s) for notification ID ${notification.id}`);
+      this.logger?.info(
+        `Preparing ${notification.attachments.length} attachment(s) for notification ID ${notification.id}`,
+      );
       mailData.attachments = await this.prepareAttachments(notification.attachments);
-      this.logger?.info(`Added ${notification.attachments.length} attachment(s) to email for notification ID ${notification.id}`);
+      this.logger?.info(
+        `Added ${notification.attachments.length} attachment(s) to email for notification ID ${notification.id}`,
+      );
     } else {
       this.logger?.info(`No attachments found for notification ID ${notification.id}`);
     }
@@ -72,16 +77,18 @@ export class SendgridNotificationAdapter<
     this.logger?.info(`Email sent for notification ID ${notification.id}`);
   }
 
-  protected async prepareAttachments(
-    attachments: StoredAttachment[],
-  ): Promise<AttachmentData[]> {
+  protected async prepareAttachments(attachments: StoredAttachment[]): Promise<AttachmentData[]> {
     return Promise.all(
       attachments.map(async (att, index) => {
         try {
-          this.logger?.info(`Preparing attachment ${index + 1}/${attachments.length}: ${att.filename}`);
+          this.logger?.info(
+            `Preparing attachment ${index + 1}/${attachments.length}: ${att.filename}`,
+          );
           this.logger?.info(`Attachment storage metadata: ${JSON.stringify(att.storageMetadata)}`);
           const content = await att.file.read();
-          this.logger?.info(`Attachment ${att.filename} read successfully, size: ${content.length} bytes`);
+          this.logger?.info(
+            `Attachment ${att.filename} read successfully, size: ${content.length} bytes`,
+          );
           return {
             filename: att.filename,
             content: content.toString('base64'),
