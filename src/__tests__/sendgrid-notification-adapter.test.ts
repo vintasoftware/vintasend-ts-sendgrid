@@ -4,7 +4,7 @@ import type {
   BaseNotificationBackend,
   DatabaseNotification,
 } from 'vintasend';
-import { type Mock, type Mocked, vi } from 'vitest';
+import { beforeEach, describe, expect, it, type Mock, type Mocked, vi } from 'vitest';
 import { SendgridNotificationAdapterFactory } from '../index';
 import type { SendgridConfig } from '../sendgrid-notification-adapter';
 
