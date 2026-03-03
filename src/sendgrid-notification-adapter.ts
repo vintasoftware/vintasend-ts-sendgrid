@@ -1,4 +1,3 @@
-import type { AttachmentData } from '@sendgrid/helpers/classes/attachment';
 import type { MailDataRequired } from '@sendgrid/mail';
 import sgMail from '@sendgrid/mail';
 import type {
@@ -77,7 +76,9 @@ export class SendgridNotificationAdapter<
     this.logger?.info(`Email sent for notification ID ${notification.id}`);
   }
 
-  protected async prepareAttachments(attachments: StoredAttachment[]): Promise<AttachmentData[]> {
+  protected async prepareAttachments(
+    attachments: StoredAttachment[],
+  ): Promise<NonNullable<MailDataRequired['attachments']>> {
     return Promise.all(
       attachments.map(async (att, index) => {
         try {

@@ -1,4 +1,4 @@
 export {
   SendgridNotificationAdapter,
   SendgridNotificationAdapterFactory,
-} from './sendgrid-notification-adapter';
+} from './sendgrid-notification-adapter.js';
