@@ -1,6 +1,6 @@
 {
   "name": "vintasend-sendgrid",
-  "version": "0.13.3",
+  "version": "0.14.0",
   "description": "",
   "type": "module",
   "main": "dist/index.js",
@@ -20,7 +20,7 @@
   "author": "Hugo Bessa",
   "license": "MIT",
   "peerDependencies": {
-    "vintasend": "^0.13.3",
+    "vintasend": "^0.14.0",
     "@sendgrid/mail": "^8.1.6"
   },
   "devDependencies": {
@@ -29,6 +29,6 @@
     "husky": "^9.1.7",
     "typescript": "^5.9.3",
     "vitest": "4.0.18",
-    "vintasend": "^0.13.0"
+    "vintasend": "^0.14.0"
   }
 }
