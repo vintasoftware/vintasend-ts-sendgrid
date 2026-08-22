@@ -4,6 +4,7 @@ import type {
   AnyDatabaseNotification,
   BaseEmailTemplateRenderer,
   BaseNotificationTypeConfig,
+  EmailTemplate,
   JsonObject,
   StoredAttachment,
 } from 'vintasend';
@@ -36,7 +37,14 @@ export class SendgridNotificationAdapter<
     return true;
   }
 
-  async send(notification: AnyDatabaseNotification<Config>, context: JsonObject): Promise<void> {
+  /**
+   * Returns what the renderer produced so the service can record which template version rendered
+   * this notification. Nothing else reads it — the message is already sent by then.
+   */
+  async send(
+    notification: AnyDatabaseNotification<Config>,
+    context: JsonObject,
+  ): Promise<EmailTemplate> {
     if (!this.backend) {
       throw new Error('Backend not injected');
     }
@@ -74,6 +82,8 @@ export class SendgridNotificationAdapter<
 
     await sgMail.send(mailData);
     this.logger?.info(`Email sent for notification ID ${notification.id}`);
+
+    return template;
   }
 
   protected async prepareAttachments(
