@@ -1,6 +1,6 @@
 {
   "name": "vintasend-sendgrid",
-  "version": "1.0.0-alpha2",
+  "version": "1.0.0-alpha3",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vintasoftware/vintasend-ts-sendgrid.git"
@@ -24,7 +24,7 @@
   "author": "Hugo Bessa",
   "license": "MIT",
   "peerDependencies": {
-    "vintasend": "^1.0.0-alpha2",
+    "vintasend": "^1.0.0-alpha3",
     "@sendgrid/mail": "^8.1.6"
   },
   "devDependencies": {
@@ -33,6 +33,6 @@
     "husky": "^9.1.7",
     "typescript": "^5.9.3",
     "vitest": "4.0.18",
-    "vintasend": "^1.0.0-alpha2"
+    "vintasend": "^1.0.0-alpha3"
   }
 }
