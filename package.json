@@ -1,6 +1,6 @@
 {
   "name": "vintasend-sendgrid",
-  "version": "0.14.1",
+  "version": "1.0.0-alpha1",
   "description": "",
   "type": "module",
   "main": "dist/index.js",
@@ -20,15 +20,15 @@
   "author": "Hugo Bessa",
   "license": "MIT",
   "peerDependencies": {
-    "vintasend": "^0.14.1",
+    "vintasend": "^1.0.0-alpha1",
     "@sendgrid/mail": "^8.1.6"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.5",
+    "@biomejs/biome": "^2.5.10",
     "@vitest/coverage-v8": "4.0.18",
     "husky": "^9.1.7",
     "typescript": "^5.9.3",
     "vitest": "4.0.18",
-    "vintasend": "^0.14.1"
+    "vintasend": "^1.0.0-alpha1"
   }
 }
