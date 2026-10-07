@@ -8,7 +8,7 @@ import type {
   JsonObject,
   StoredAttachment,
 } from 'vintasend';
-import { BaseNotificationAdapter } from 'vintasend';
+import { BaseNotificationAdapter, log, logCount, logError, logId } from 'vintasend';
 
 export interface SendgridConfig {
   apiKey: string;
@@ -70,18 +70,31 @@ export class SendgridNotificationAdapter<
     // Add attachments if present
     if (notification.attachments && notification.attachments.length > 0) {
       this.logger?.info(
-        `Preparing ${notification.attachments.length} attachment(s) for notification ID ${notification.id}`,
+        log`Preparing ${logCount(notification.attachments.length)} attachment(s) for notification ID ${logId(notification.id)}`,
       );
       mailData.attachments = await this.prepareAttachments(notification.attachments);
       this.logger?.info(
-        `Added ${notification.attachments.length} attachment(s) to email for notification ID ${notification.id}`,
+        log`Added ${logCount(notification.attachments.length)} attachment(s) to email for notification ID ${logId(notification.id)}`,
       );
     } else {
-      this.logger?.info(`No attachments found for notification ID ${notification.id}`);
+      this.logger?.info(log`No attachments found for notification ID ${logId(notification.id)}`);
     }
 
-    await sgMail.send(mailData);
-    this.logger?.info(`Email sent for notification ID ${notification.id}`);
+    try {
+      await sgMail.send(mailData);
+    } catch (error) {
+      // SendGrid's ResponseError keeps the HTTP status in `code`; its message and `response.body`
+      // can echo the recipient and the email content, so only the name and status are logged.
+      const code = (error as { code?: unknown } | null)?.code;
+      this.logger?.error(
+        log`SendGrid failed to send email for notification ID ${logId(notification.id)}: ${logError(
+          error,
+          typeof code === 'number' ? { status: code } : {},
+        )}`,
+      );
+      throw error;
+    }
+    this.logger?.info(log`Email sent for notification ID ${logId(notification.id)}`);
 
     return template;
   }
@@ -93,12 +106,11 @@ export class SendgridNotificationAdapter<
       attachments.map(async (att, index) => {
         try {
           this.logger?.info(
-            `Preparing attachment ${index + 1}/${attachments.length}: ${att.filename}`,
+            log`Preparing attachment ${logCount(index + 1)}/${logCount(attachments.length)}: ${logId(att.id)}`,
           );
-          this.logger?.info(`Attachment storage metadata: ${JSON.stringify(att.storageMetadata)}`);
           const content = await att.file.read();
           this.logger?.info(
-            `Attachment ${att.filename} read successfully, size: ${content.length} bytes`,
+            log`Attachment ${logId(att.id)} read successfully, size: ${logCount(content.length)} bytes`,
           );
           return {
             filename: att.filename,
@@ -107,8 +119,9 @@ export class SendgridNotificationAdapter<
             disposition: 'attachment',
           };
         } catch (error) {
-          this.logger?.error(`Failed to prepare attachment ${att.filename}`);
-          this.logger?.error(`Error details: ${JSON.stringify(error, null, 2)}`);
+          this.logger?.error(
+            log`Failed to prepare attachment ${logId(att.id)}: ${logError(error)}`,
+          );
           throw error;
         }
       }),

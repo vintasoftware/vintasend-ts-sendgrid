@@ -6,6 +6,7 @@ import type {
   DatabaseNotification,
   StoredAttachment,
 } from 'vintasend';
+import { logMessageMatching, renderLogMessage } from 'vintasend';
 import { beforeEach, describe, expect, it, type Mock, type Mocked, vi } from 'vitest';
 import { SendgridNotificationAdapterFactory } from '../index';
 import type { SendgridConfig } from '../sendgrid-notification-adapter';
@@ -307,5 +308,61 @@ describe('SendgridNotificationAdapter - Attachments', () => {
       subject: renderedTemplate.subject,
       html: renderedTemplate.body,
     });
+  });
+
+  it('should not log attachment filenames, storage metadata or error messages', async () => {
+    const logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+    const adapter = new SendgridNotificationAdapterFactory().create(
+      mockTemplateRenderer,
+      false,
+      config,
+    );
+    adapter.injectBackend(mockBackend);
+    adapter.injectLogger(logger);
+
+    const readError = new Error('Cannot read s3://bucket/Jane_Synthetic/labs.pdf');
+    const mockFile: AttachmentFile = {
+      read: vi.fn().mockRejectedValue(readError),
+      stream: vi.fn(),
+      url: vi.fn(),
+      delete: vi.fn(),
+    };
+    mockNotification.attachments = [
+      {
+        id: 'att-1',
+        fileId: 'file-1',
+        filename: 'Jane_Synthetic_lab_results.pdf',
+        contentType: 'application/pdf',
+        size: 10,
+        checksum: 'abc123',
+        description: 'Lab results for Jane Synthetic',
+        file: mockFile,
+        createdAt: new Date(),
+        storageMetadata: { key: 'patients/jane.synthetic@example.com/labs.pdf' },
+      },
+    ];
+
+    mockTemplateRenderer.render.mockResolvedValue({
+      subject: 'Test Subject',
+      body: '<p>Test Body</p>',
+    });
+    mockBackend.getUserEmailFromNotification.mockResolvedValue('jane.synthetic@example.com');
+
+    await expect(adapter.send(mockNotification, {})).rejects.toBe(readError);
+
+    expect(logger.error).toHaveBeenCalledWith(
+      logMessageMatching('Failed to prepare attachment att-1: Error'),
+    );
+    expect(mockSend).not.toHaveBeenCalled();
+    const rendered = [
+      ...logger.info.mock.calls,
+      ...logger.warn.mock.calls,
+      ...logger.error.mock.calls,
+    ]
+      .map((call) => renderLogMessage(call[0]))
+      .join('\n');
+    expect(rendered).not.toContain('Jane');
+    expect(rendered).not.toContain('jane.synthetic@example.com');
+    expect(rendered).not.toContain('labs.pdf');
   });
 });

@@ -4,6 +4,7 @@ import type {
   BaseNotificationBackend,
   DatabaseNotification,
 } from 'vintasend';
+import { logMessageMatching, renderLogMessage } from 'vintasend';
 import { beforeEach, describe, expect, it, type Mock, type Mocked, vi } from 'vitest';
 import { SendgridNotificationAdapterFactory } from '../index';
 import type { SendgridConfig } from '../sendgrid-notification-adapter';
@@ -206,5 +207,81 @@ describe('SendgridNotificationAdapter', () => {
     await expect(adapter.send(mockNotification, {})).rejects.toThrow(
       'User email not found for notification 123',
     );
+  });
+
+  it('should log only the error name and status when SendGrid rejects the email', async () => {
+    const logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+    const adapter = new SendgridNotificationAdapterFactory().create(
+      mockTemplateRenderer,
+      false,
+      config,
+    );
+    adapter.injectBackend(mockBackend);
+    adapter.injectLogger(logger);
+
+    mockTemplateRenderer.render.mockResolvedValue({
+      subject: 'Lab results for Jane Synthetic',
+      body: '<p>Jane Synthetic, your results are ready</p>',
+    });
+    mockBackend.getUserEmailFromNotification.mockResolvedValue('jane.synthetic@example.com');
+
+    // Shaped like @sendgrid/helpers ResponseError: HTTP status in `code`, payload in `response.body`.
+    const responseError = Object.assign(
+      new Error('Bad Request: invalid recipient jane.synthetic@example.com (Jane Synthetic)'),
+      {
+        name: 'ResponseError',
+        code: 400,
+        response: {
+          headers: {},
+          body: {
+            errors: [{ message: 'Invalid email jane.synthetic@example.com', field: 'to' }],
+          },
+        },
+      },
+    );
+    mockSend.mockRejectedValueOnce(responseError);
+
+    await expect(adapter.send(mockNotification, {})).rejects.toBe(responseError);
+
+    expect(logger.error).toHaveBeenCalledWith(
+      logMessageMatching(
+        'SendGrid failed to send email for notification ID 123: ResponseError (status 400)',
+      ),
+    );
+    const rendered = [
+      ...logger.info.mock.calls,
+      ...logger.warn.mock.calls,
+      ...logger.error.mock.calls,
+    ]
+      .map((call) => renderLogMessage(call[0]))
+      .join('\n');
+    expect(rendered).not.toContain('Jane Synthetic');
+    expect(rendered).not.toContain('jane.synthetic@example.com');
+    expect(rendered).not.toContain('Bad Request');
+  });
+
+  it('should log the notification ID when the email is sent', async () => {
+    const logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+    const adapter = new SendgridNotificationAdapterFactory().create(
+      mockTemplateRenderer,
+      false,
+      config,
+    );
+    adapter.injectBackend(mockBackend);
+    adapter.injectLogger(logger);
+
+    mockTemplateRenderer.render.mockResolvedValue({
+      subject: 'Test Subject',
+      body: '<p>Test Body</p>',
+    });
+    mockBackend.getUserEmailFromNotification.mockResolvedValue('user@example.com');
+    mockSend.mockResolvedValueOnce(undefined);
+
+    await adapter.send(mockNotification, {});
+
+    expect(logger.info).toHaveBeenCalledWith(
+      logMessageMatching('Email sent for notification ID 123'),
+    );
+    expect(logger.error).not.toHaveBeenCalled();
   });
 });
