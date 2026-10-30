@@ -1,4 +1,3 @@
-import type { MailDataRequired } from '@sendgrid/mail';
 import sgMail from '@sendgrid/mail';
 import type {
   AnyDatabaseNotification,
@@ -9,6 +8,10 @@ import type {
   StoredAttachment,
 } from 'vintasend';
 import { BaseNotificationAdapter, log, logCount, logError, logId } from 'vintasend';
+
+// `@sendgrid/mail` declares its named type exports alongside `export =`, which
+// TypeScript 7 no longer resolves, so the message type is taken from `send`.
+type MailDataRequired = Exclude<Parameters<typeof sgMail.send>[0], unknown[]>;
 
 export interface SendgridConfig {
   apiKey: string;
